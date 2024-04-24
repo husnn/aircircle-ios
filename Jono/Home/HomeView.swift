@@ -23,6 +23,7 @@ struct HomeView: View {
     @ObservedObject var vm = HomeViewModel()
     
     @State var personSelected: Person?
+    @State var selectedNoteID: Int64?
     
     var body: some View {
         ZStack(alignment: .leading) {
@@ -87,6 +88,7 @@ struct HomeView: View {
             SearchView(animation: searchAnimation, onPersonSelect: {
                 showSearchSheet = false
                 personSelected = $0
+                selectedNoteID = $1
             }, onCreateNew: { name in
                 showSearchSheet = false
                 newPersonName = name
@@ -114,7 +116,7 @@ struct HomeView: View {
                     personSelected = nil
                 }
                 vm.fetchPersons()
-            })
+            }, highlightedNoteID: $selectedNoteID)
             .presentationDetents([.medium, .large])
         }
         .sheet(item: $vm.audioRecordingPath) { url in

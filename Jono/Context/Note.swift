@@ -13,3 +13,4 @@ struct Note: Codable, Identifiable {
     var text: String;
     var createdAt = Date();
 }
+

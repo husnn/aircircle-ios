@@ -8,6 +8,11 @@
 import Foundation
 import GRDB
 
+struct NoteResult {
+    let note: Note
+    let person: Person
+}
+
 class ContextService: ObservableObject {
     let networkManager: NetworkManager
     
@@ -77,7 +82,10 @@ class ContextService: ObservableObject {
         
         do {
             try dbPool.read { db in
-                notes = try Note.filter(Column("personId") == personId).fetchAll(db)
+                notes = try Note
+                    .filter(Column("personId") == personId)
+                    .order(Column("createdAt").desc)
+                    .fetchAll(db)
             }
         } catch {
             print("Could not get notes for person: \(error.localizedDescription)")
@@ -86,8 +94,18 @@ class ContextService: ObservableObject {
         return notes
     }
     
-    func search(_ term: String) -> [Note] {
-        var notes: [Note] = []
+    func deleteNote(_ id: Int64) {
+        do {
+            _ = try dbPool.write { db in
+                try Note.deleteOne(db, id: id)
+            }
+        } catch {
+            print("Could not delete note: \(error.localizedDescription)")
+        }
+    }
+    
+    func search(_ term: String) -> [NoteResult] {
+        var notes: [NoteResult] = []
         
         do {
             try dbPool.read { db in
@@ -102,6 +120,12 @@ class ContextService: ObservableObject {
                 
                 let pattern = FTS5Pattern(matchingPhrase: term)
                 notes = try Note.fetchAll(db, sql: sql, arguments: [pattern])
+                    .compactMap() { n in
+                        if let person = try n.person.fetchOne(db) {
+                            return NoteResult(note: n, person: person)
+                        }
+                        return nil
+                    }
             }
         } catch {
             print("Could not search for Note records. \(error.localizedDescription)")

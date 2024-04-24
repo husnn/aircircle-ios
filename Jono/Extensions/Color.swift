@@ -12,6 +12,7 @@ public extension Color {
     static let jonoOlive = Color("OliveColor")
     static let jonoYellow = Color("LightYellowColor")
     static let jonoDarkGrey = Color("DarkGreyColor")
+    static let jonoLightGrey = Color("LightGreyColor")
     static let jonoBlack = Color("AlmostBlackColor")
     
     static func random(randomOpacity: Bool = false) -> Color {

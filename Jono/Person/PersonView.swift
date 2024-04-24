@@ -54,12 +54,42 @@ struct PersonAvatarView: View {
     }
 }
 
+struct NoteView: View {
+    let note: Note
+    let onDelete: (() -> Void)
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Created \(note.createdAt.formatted(date: .long, time: .omitted))")
+                .font(.label())
+                .opacity(0.5)
+            
+            Text(note.text)
+                .font(.label())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
+        .background(Color.jonoLightGrey)
+        .contextMenu() {
+            Button(action: onDelete, label: {
+                Label("Delete", systemImage: "trash")
+            })
+        }
+        .clipShape(
+            RoundedRectangle(cornerRadius: 20)
+        )
+    }
+}
+
 struct PersonView: View {
     @EnvironmentObject var personService: PersonService
     @EnvironmentObject private var contextService: ContextService
     
     let person: Person;
     let onRefresh: ((_ dismiss: Bool) -> Void)?
+    
+    @Binding var highlightedNoteID: Int64?
     
     let avatarSize: CGFloat = 100.0
     
@@ -121,9 +151,6 @@ struct PersonView: View {
                             .opacity(0.6)
                     }
                     
-                    Spacer()
-                        .frame(height: 10)
-                    
                     VStack(alignment: .leading, spacing: 5) {
                         TextField("Add a short bio", text: $bio, axis: .vertical)
                             .font(.body())
@@ -148,11 +175,29 @@ struct PersonView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                
-                Spacer()
+                .padding(.bottom, 20)
                 
                 ForEach(notes, id: \.id) { note in
-                    Text(note.text)
+                    NoteView(note: note, onDelete: {
+                        if let nid = note.id {
+                            contextService.deleteNote(nid)
+                        }
+                        if let pid = person.id {
+                            notes = contextService.getNotesForPerson(id: pid)
+                        }
+                    })
+                    .opacity(
+                        highlightedNoteID != nil
+                            ? highlightedNoteID == note.id ? 1 : 0.2
+                            : 1
+                    )
+                    
+                }
+                .padding(.top, 10)
+                .onAppear() {
+                    withAnimation(.easeInOut(duration: 2)) {
+                        highlightedNoteID = nil
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -171,5 +216,7 @@ struct PersonView: View {
 #Preview {
     let person = Person(name: "John")
     
-    return PersonView(person: person, onRefresh: nil)
+    @State var highlightedNoteID: Int64? = nil
+    
+    return PersonView(person: person, onRefresh: nil, highlightedNoteID: $highlightedNoteID)
 }

@@ -9,6 +9,23 @@ import GRDB
 import SwiftUI
 
 class PersonService: ObservableObject {
+    
+    func create(name: String, bio: String) -> Person? {
+        var person = Person(name: name, bio: bio)
+        
+        do {
+            try dbPool.write { db in
+                try person.insert(db)
+            }
+            
+            return person
+        } catch {
+            print("Could not insert Person record. \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+    
     func getAll(limit: Int = 10) -> [Person] {
         var persons: [Person] = []
         

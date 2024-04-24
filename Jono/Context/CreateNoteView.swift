@@ -85,7 +85,7 @@ struct CreateNoteView: View {
                         }
                     }
                     .buttonStyle(PrimaryButton())
-                    .disabled(person == nil)
+                    .disabled(person == nil || text.isEmpty)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             } else {

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct AddPersonView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var personService: PersonService
     
     let initialName: String?
     
@@ -101,6 +102,8 @@ struct AddPersonView: View {
             ContactPicker(contact: $contact)
         }
         .onAppear {
+            vm.setup(personService: personService)
+            
             if let initial = initialName {
                 name = initial
             }

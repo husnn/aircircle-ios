@@ -69,6 +69,17 @@ struct SelectPersonView: View {
                             onSelect(person)
                         }
                 }
+                
+                let name = vm.input
+                
+                if !name.isEmpty {
+                    PersonResultRow(person: Person(name: "Create '\(name.capitalized)'"), create: true)
+                        .onTapGesture {
+                            if let person = personService.create(name: name.capitalized, bio: "") {
+                                onSelect(person)
+                            }
+                        }
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

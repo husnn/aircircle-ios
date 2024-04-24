@@ -9,19 +9,13 @@ import Foundation
 
 class AddPersonViewModel: ObservableObject {
     
+    private var personService: PersonService?
+    
     func create(name: String, bio: String) -> Bool {
-        var person = Person(name: name, bio: bio)
-        
-        do {
-            try dbPool.write { db in
-                try person.insert(db)
-            }
-            
-            return true
-        } catch {
-            print("Could not insert Person record. \(error.localizedDescription)")
-        }
-        
-        return false
+        return self.personService?.create(name: name, bio: bio) != nil
+    }
+    
+    func setup(personService: PersonService) {
+        self.personService = personService
     }
 }
